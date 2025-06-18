@@ -2,17 +2,17 @@ import express, { Request, Response, NextFunction } from 'express';
 import React from 'react';
 import { render } from '@react-email/render';
 
-import Welcome from './emails/Welcome';
+import Welcome, { WelcomeProps } from './emails/welcome/Welcome';
 
-interface EmailTemplates {
-    Welcome: { name: string };
-}
-
-const templates: {
-    [K in keyof EmailTemplates]: React.FC<EmailTemplates[K]>
-} = {
-    Welcome,
+const templates = {
+    Welcome: {
+        component: Welcome,
+        props: {} as WelcomeProps,
+    },
 };
+
+type EmailTemplates = typeof templates;
+type TemplateName = keyof EmailTemplates;
 
 const app = express();
 
@@ -31,23 +31,44 @@ function asyncHandler<
     };
 }
 
+async function renderAndSendEmail(
+    templateName: TemplateName,
+    props: any,
+    token: string,
+    res: Response,
+    plainText?: boolean
+) {
+    const TemplateComponent = templates[templateName]?.component;
+    if (!TemplateComponent) {
+        res.status(400).send(`Template '${templateName}' not found.`);
+        return;
+    }
+
+    const html = await render(
+        React.createElement(TemplateComponent, { ...props, token }),
+        { plainText }
+    );
+
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+}
+
 app.post(
-    '/email',
+    '/',
     asyncHandler(async (req: Request, res: Response) => {
-        const { templateName, props } = req.body as {
-            templateName: keyof EmailTemplates;
+        const { templateName, props, token, plainText } = req.body as {
+            templateName: TemplateName;
             props: any;
+            token: string;
+            plainText?: boolean;
         };
 
-        const TemplateComponent = templates[templateName];
-        if (!TemplateComponent) {
-            res.status(400).send(`Template '${templateName}' not found.`);
+        if (!token) {
+            res.status(400).send("Missing required fields: 'token'");
             return;
         }
 
-        const html = await render(React.createElement(TemplateComponent, props));
-        res.setHeader('Content-Type', 'text/html');
-        res.send(html);
+        await renderAndSendEmail(templateName, props, token, res, plainText);
     })
 );
 

@@ -1,27 +1,31 @@
 import * as React from "react";
-import { Column, Container, Font, Head, Html, Link, Row, Section, Tailwind } from "@react-email/components";
+import { Column, Container, Font, Head, Html, Img, Link, Preview, Row, Section, Tailwind, Text } from "@react-email/components";
 
-interface BaseProps {
-    lang?: 'nl' | 'en',
+export interface BaseProps {
+    lang?: 'nl' | 'en';
+    token: string;
+    preview: string;
     children: React.ReactNode;
 }
 
-export const Base = ({ lang, children }: BaseProps) => {
+export const Base = ({ lang, token, preview, children }: BaseProps) => {
   
     return (
         <Html lang={lang ? lang : 'nl'}>
             <Head>
+                <meta name="color-scheme" content="light" />
                 <Font
-                fontFamily="Inter"
-                fallbackFontFamily="Verdana"
-                webFont={{
-                    url: "https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_fjbvMwCp504jAa2JL7W0Q5n-wU.woff2",
-                    format: "woff2",
-                }}
-                fontWeight={400}
-                fontStyle="normal"
+                    fontFamily="Inter"
+                    fallbackFontFamily="Verdana"
+                    webFont={{
+                        url: "https://fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_fjbvMwCp504jAa2JL7W0Q5n-wU.woff2",
+                        format: "woff2",
+                    }}
+                    fontWeight={400}
+                    fontStyle="normal"
                 />
             </Head>
+            <Preview>{preview}</Preview>
             <Tailwind
                 config={{
                     theme: {
@@ -50,19 +54,6 @@ export const Base = ({ lang, children }: BaseProps) => {
                                 "amber-grey-800": "oklch(27.34% 0.008 43.04)",
                                 "amber-grey-900": "oklch(22.01% 0.007 67.39)",
                             },
-                            fontSize: {
-                                "subtitle-2": ["1.25rem", { lineHeight: "1.875rem", letterSpacing: "0rem", fontWeight: "500" }],
-                                "subtitle-3": ["1.125rem", { lineHeight: "1.688rem", letterSpacing: "0rem", fontWeight: "500" }],
-                                "subtitle-4": ["1rem", { lineHeight: "1.5rem", letterSpacing: "0rem", fontWeight: "500" }],
-                                "base-1": ["1.125rem", { lineHeight: "1.688rem", letterSpacing: "0rem", fontWeight: "400" }],
-                                "base-2": ["1rem", { lineHeight: "1.5rem", letterSpacing: "0rem", fontWeight: "400" }],
-                                "base-3": ["0.875rem", { lineHeight: "1.313rem", letterSpacing: "0rem", fontWeight: "400" }],
-                                "caption-1": ["0.75rem", { lineHeight: "1.125rem", letterSpacing: "0rem", fontWeight: "400" }],
-                                "link-1": ["1.125rem", { lineHeight: "1.688rem", letterSpacing: "0rem", fontWeight: "400" }],
-                                "link-2": ["1rem", { lineHeight: "1.5rem", letterSpacing: "0rem", fontWeight: "400" }],
-                                "link-3": ["0.875rem", { lineHeight: "1.313rem", letterSpacing: "0rem", fontWeight: "400" }],
-                                "subtitle-5": ["0.875rem", { lineHeight: "1.313rem", letterSpacing: "0rem", fontWeight: "500" }],
-                            },
                             boxShadow: {
                                 overlay: "0rem 0.25rem 0.5rem 0rem oklch(0% 0 0 / 25%)",
                             },
@@ -70,19 +61,40 @@ export const Base = ({ lang, children }: BaseProps) => {
                     },
               }}
             >
-                <Section className={'bg-sand-100 py-8 px-2 text-base-2'}>
-                    <Row>
+                <Section 
+                    style={{ 
+                        padding: "32px 8px",
+                        backgroundColor: "#f6efe7", 
+                        color: "#47423c" 
+                    }}
+                >
+                    <Row style={{ marginBottom: "24px" }}>
                         <Column align="center">
-                            Kamur Logo
+                            <Link href="https://kamur.nl">
+                                <Img src="https://i.ibb.co/My9d1FsM/image.png" alt="Logo" width="139" height="30" />
+                            </Link>
                         </Column>
                     </Row>
-                    <Container className={'bg-primary-white px-6 py-5'}>
+                    <Container
+                        style={{ 
+                            backgroundColor: "#fff", 
+                            color: "#47423c",
+                            padding: "20px 24px"
+                         }}
+                    >
                         {children}
                     </Container>
-                    <Section className={'text-amber-grey-600 text-base-3 mt-6'}>
+                    <Section style={{ fontSize: "12px", color: "#5b564e" }}>
+                        <Row style={{ marginBottom: "8px", marginTop: "24px" }}>
+                            <Column align="center">
+                                <Link href="https://kamur.nl">
+                                    <Img src="https://i.ibb.co/My9d1FsM/image.png" alt="Logo" width="93" height="20" />
+                                </Link>
+                            </Column>
+                        </Row>
                         <Row>
                             <Column align="center">
-                                Alle rechten voorbehouden © 2025 Kamur.nl
+                                © 2025 Kamur.nl - Alle rechten voorbehouden
                             </Column>
                         </Row>
                         <Row>
@@ -91,17 +103,17 @@ export const Base = ({ lang, children }: BaseProps) => {
                             </Column>
                         </Row>
                         <Row>
-                            <Column align="center" className={'flex gap-x-1 flex-wrap justify-center'}>
+                            <Column align="center">
                                 <Link 
                                     href={'https://kamur.nl/profile/notifications'} 
-                                    className={'underline text-amber-grey-600'}
+                                    style={{ textDecoration: "underline", color: "#47423c" }}
                                 >
                                     Meldingen instellen
-                                </Link> 
-                                of 
+                                </Link>
+                                &nbsp;&nbsp;•&nbsp;&nbsp;
                                 <Link 
-                                    href={'https://kamur.nl/unsubscribe?token='}
-                                    className={'underline text-amber-grey-600'}
+                                    href={`https://kamur.nl/unsubscribe?token=${token}`}
+                                    style={{ textDecoration: "underline", color: "#47423c" }}
                                 >
                                     uitschrijven
                                 </Link>
