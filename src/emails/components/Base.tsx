@@ -1,15 +1,20 @@
 import * as React from "react";
-import { Column, Container, Font, Head, Html, Img, Link, Preview, Row, Section, Tailwind, Text } from "@react-email/components";
+import { Column, Container, Font, Head, Html, Img, Link, Preview, Row, Section, Tailwind } from "@react-email/components";
+import { useTranslation } from "react-i18next";
+import i18next from '../i18n';
 
 export interface BaseProps {
     lang?: 'nl' | 'en';
-    token: string;
+    token?: string;
     preview: string;
     children: React.ReactNode;
 }
 
+
 export const Base = ({ lang, token, preview, children }: BaseProps) => {
-  
+    const { t } = useTranslation();
+    i18next.changeLanguage(lang ? lang : 'nl');
+
     return (
         <Html lang={lang ? lang : 'nl'}>
             <Head>
@@ -94,7 +99,7 @@ export const Base = ({ lang, token, preview, children }: BaseProps) => {
                         </Row>
                         <Row>
                             <Column align="center">
-                                © 2025 Kamur.nl - Alle rechten voorbehouden
+                                {t('footer.copyright')}
                             </Column>
                         </Row>
                         <Row>
@@ -108,15 +113,19 @@ export const Base = ({ lang, token, preview, children }: BaseProps) => {
                                     href={'https://kamur.nl/profile/notifications'} 
                                     style={{ textDecoration: "underline", color: "#47423c" }}
                                 >
-                                    Meldingen instellen
+                                    {t('footer.set-notifications')}
                                 </Link>
-                                &nbsp;&nbsp;•&nbsp;&nbsp;
-                                <Link 
-                                    href={`https://kamur.nl/unsubscribe?token=${token}`}
-                                    style={{ textDecoration: "underline", color: "#47423c" }}
-                                >
-                                    uitschrijven
-                                </Link>
+                                {token && 
+                                    <>
+                                    &nbsp;&nbsp;•&nbsp;&nbsp;
+                                    <Link 
+                                        href={`https://kamur.nl/unsubscribe?token=${token}`}
+                                        style={{ textDecoration: "underline", color: "#47423c" }}
+                                    >
+                                        {t('footer.unsubscribe')}
+                                    </Link>
+                                    </>
+                                }
                             </Column>
                         </Row>
                     </Section>

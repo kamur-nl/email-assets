@@ -5,73 +5,71 @@ import { render } from '@react-email/render';
 import Welcome, { WelcomeProps } from './emails/welcome/Welcome';
 
 const templates = {
-    Welcome: {
-        component: Welcome,
-        props: {} as WelcomeProps,
-    },
+  Welcome: {
+    component: Welcome,
+    props: {} as WelcomeProps,
+  },
 };
 
 type EmailTemplates = typeof templates;
 type TemplateName = keyof EmailTemplates;
 
 const app = express();
-
 app.use(express.json());
 
 function asyncHandler<
-    P = any,
-    ResBody = any,
-    ReqBody = any,
-    ReqQuery = any
+  P = any,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = any
 >(
-    fn: (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response) => Promise<any>
+  fn: (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response) => Promise<any>
 ) {
-    return (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response, next: NextFunction) => {
-        Promise.resolve(fn(req, res)).catch(next);
-    };
+  return (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response, next: NextFunction) =>
+    Promise.resolve(fn(req, res)).catch(next);
 }
 
-async function renderAndSendEmail(
-    templateName: TemplateName,
-    props: any,
-    token: string,
-    res: Response,
-    plainText?: boolean
-) {
-    const TemplateComponent = templates[templateName]?.component;
-    if (!TemplateComponent) {
-        res.status(400).send(`Template '${templateName}' not found.`);
-        return;
-    }
+async function renderEmail(
+  templateName: TemplateName,
+  props: any,
+  plainText?: boolean,
+  token?: string,
+  preview?: string,
+  lang?: 'en' | 'nl',
+): Promise<string> {
+  const TemplateComponent = templates[templateName]?.component;
+  if (!TemplateComponent) {
+    throw new Error(`Template '${templateName}' not found.`);
+  }
 
-    const html = await render(
-        React.createElement(TemplateComponent, { ...props, token }),
-        { plainText }
-    );
-
-    res.setHeader('Content-Type', 'text/html');
-    res.send(html);
+  return await render(
+    React.createElement(TemplateComponent, { ...props, token, lang, preview }),
+    { plainText }
+  );
 }
 
 app.post(
-    '/',
-    asyncHandler(async (req: Request, res: Response) => {
-        const { templateName, props, token, plainText } = req.body as {
-            templateName: TemplateName;
-            props: any;
-            token: string;
-            plainText?: boolean;
-        };
+  '/',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { templateName, props, plainText, token, preview, lang } = req.body as {
+      templateName: TemplateName;
+      props: any;
+      plainText?: boolean;
+      token?: string;
+      preview?: string;
+      lang?: 'en' | 'nl';
+    };
 
-        if (!token) {
-            res.status(400).send("Missing required fields: 'token'");
-            return;
-        }
-
-        await renderAndSendEmail(templateName, props, token, res, plainText);
-    })
+    try {
+      const html = await renderEmail(templateName, props, plainText, token, preview, lang);
+      res.setHeader('Content-Type', 'text/html');
+      res.send(html);
+    } catch (error) {
+      res.status(400).send((error as Error).message);
+    }
+  })
 );
 
 app.listen(3587, () => {
-    console.log('Server running at http://localhost:3587/email');
+  console.log('Server running at http://localhost:3587/email');
 });

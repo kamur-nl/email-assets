@@ -1,15 +1,17 @@
 {
   "scripts": {
-      "build": "tsc",
-      "start": "node dist/server.js",
-      "email": "email dev --dir ./src/emails"
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "email": "email dev --dir ./src/emails"
   },
   "dependencies": {
     "@react-email/components": "0.0.42",
     "@react-email/render": "^1.1.2",
     "express": "^5.1.0",
+    "i18next": "^25.2.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-i18next": "^15.5.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
