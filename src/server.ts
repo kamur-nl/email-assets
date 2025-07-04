@@ -1,59 +1,50 @@
 import express, { Request, Response, NextFunction } from 'express';
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { render } from '@react-email/render';
-
-import Welcome, { WelcomeProps } from './emails/welcome/Welcome';
-
-const templates = {
-  Welcome: {
-    component: Welcome,
-    props: {} as WelcomeProps,
-  },
-};
-
-type EmailTemplates = typeof templates;
-type TemplateName = keyof EmailTemplates;
+import * as EmailTemplates from './emails';
 
 const app = express();
 app.use(express.json());
 
-function asyncHandler<
-  P = any,
-  ResBody = any,
-  ReqBody = any,
-  ReqQuery = any
->(
-  fn: (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response) => Promise<any>
+type BaseProps = {
+  token?: string;
+  preview?: string;
+  lang?: 'en' | 'nl';
+};
+
+type TemplateProps = Record<string, any>;
+
+function asyncHandler(
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
 ) {
-  return (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response, next: NextFunction) =>
-    Promise.resolve(fn(req, res)).catch(next);
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
 }
 
 async function renderEmail(
-  templateName: TemplateName,
-  props: any,
-  plainText?: boolean,
-  token?: string,
-  preview?: string,
-  lang?: 'en' | 'nl',
+  templateName: string,
+  props: TemplateProps = {},
+  baseProps: BaseProps = {},
+  plainText?: boolean
 ): Promise<string> {
-  const TemplateComponent = templates[templateName]?.component;
+  const TemplateComponent = (EmailTemplates as Record<string, ComponentType<any>>)[templateName];
+
   if (!TemplateComponent) {
     throw new Error(`Template '${templateName}' not found.`);
   }
 
-  return await render(
-    React.createElement(TemplateComponent, { ...props, token, lang, preview }),
-    { plainText }
-  );
+  const combinedProps = { ...props, ...baseProps };
+
+  return render(React.createElement(TemplateComponent, combinedProps), { plainText });
 }
 
 app.post(
   '/',
   asyncHandler(async (req: Request, res: Response) => {
-    const { templateName, props, plainText, token, preview, lang } = req.body as {
-      templateName: TemplateName;
-      props: any;
+    const { templateName, props = {}, plainText, token, preview, lang } = req.body as {
+      templateName: string;
+      props?: TemplateProps;
       plainText?: boolean;
       token?: string;
       preview?: string;
@@ -61,7 +52,7 @@ app.post(
     };
 
     try {
-      const html = await renderEmail(templateName, props, plainText, token, preview, lang);
+      const html = await renderEmail(templateName, props, { token, preview, lang }, plainText);
       res.setHeader('Content-Type', 'text/html');
       res.send(html);
     } catch (error) {
@@ -71,5 +62,5 @@ app.post(
 );
 
 app.listen(3587, () => {
-  console.log('Server running at http://localhost:3587/email');
+  console.log('Email rendering server running at http://localhost:3587/');
 });
