@@ -4,9 +4,10 @@ import Button from "../components/Button";
 
 export interface VerifyProps {
     verifyToken: string;
+    email: string;
 }
 
-export const Verify = ({ verifyToken, ...props }: VerifyProps & BaseProps) => {
+export const Verify = ({ email, verifyToken, ...props }: VerifyProps & BaseProps) => {
   
     return (
         <Base {...props}>
@@ -28,7 +29,7 @@ export const Verify = ({ verifyToken, ...props }: VerifyProps & BaseProps) => {
                     width: "100%" 
                 }} 
                 variant={'primary'} 
-                href={`https://kamur.nl/auth/verify?token=${verifyToken}`}
+                href={`https://kamur.nl/auth/verify?token=${verifyToken}&email=${email}`}
             >
                 Verifieer je account
             </Button>
